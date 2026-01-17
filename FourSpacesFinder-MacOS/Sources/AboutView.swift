@@ -12,8 +12,8 @@ struct AboutView: View {
     
     private let people: [AboutPerson] = [
         AboutPerson(name: "Magalona, Adriel", imageFileName: "Adriel.png"),
-        AboutPerson(name: "Puti, Vince", imageFileName: "Vince.jpg"),
-        AboutPerson(name: "Mac, Lozano", imageFileName: "Mac.jpg"),
+        AboutPerson(name: "Puti, Jude Vincent", imageFileName: "Vince.jpg"),
+        AboutPerson(name: "Lozano, Mad Edison", imageFileName: "Mac.jpg"),
         AboutPerson(name: "Monterey, Reine Arabelle", imageFileName: "Reine.jpg"),
         AboutPerson(name: "Dotollo, Zyrah Mae", imageFileName: "Zyrah.JPG"),
         AboutPerson(name: "Castillejo, Paul Daniel", imageFileName: "Paul.jpg")
@@ -136,4 +136,3 @@ private struct AboutAvatar: View {
         return NSImage(contentsOf: url)
     }
 }
-

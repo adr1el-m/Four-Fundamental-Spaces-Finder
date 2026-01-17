@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 struct StepsView: View {
     let steps: [CalculationStep]
@@ -110,6 +111,16 @@ private struct StepMatrixCard: View {
     var body: some View {
         let m = step.matrixState
         let pivotSet = Set(pivots)
+        let font = NSFont.monospacedSystemFont(ofSize: 13, weight: .medium)
+        let colWidths: [CGFloat] = (0..<m.cols).map { c in
+            var w: CGFloat = 36
+            for r in 0..<m.rows {
+                let s = m.get(r, c).description
+                let measured = (s as NSString).size(withAttributes: [.font: font]).width + 14
+                w = max(w, ceil(measured))
+            }
+            return w
+        }
         
         VStack(spacing: 4) {
             ForEach(0..<m.rows, id: \.self) { r in
@@ -121,7 +132,8 @@ private struct StepMatrixCard: View {
                         Text(val.description)
                             .font(.system(size: 13, weight: .medium, design: .monospaced))
                             .foregroundStyle(isHighlighted ? Color.blue : Color.primary)
-                            .frame(width: 36, height: 24)
+                            .lineLimit(1)
+                            .frame(width: colWidths[c], height: 24)
                             .background(
                                 RoundedRectangle(cornerRadius: 6)
                                     .fill(isHighlighted ? Color.blue.opacity(0.18) : Color.clear)

@@ -65,79 +65,35 @@ function leftNullSpaceExplanation(numRows: number, transposePivots: number[]) {
   return `Columns ${colsList(freeCols)} of Aᵗ are free variables, so the left null space N(Aᵗ) basis vectors are found by setting one free variable to 1 (others 0) and solving for the pivot variables.`;
 }
 
-const DEFAULT_INPUTS = Array(25).fill("0");
-// Set defaults like in Swift
-DEFAULT_INPUTS[0] = "2"; DEFAULT_INPUTS[1] = "4"; DEFAULT_INPUTS[2] = "-2";
-DEFAULT_INPUTS[5] = "1"; DEFAULT_INPUTS[6] = "2"; DEFAULT_INPUTS[7] = "-1";
-
-const INITIAL_ROWS = 2;
-const INITIAL_COLS = 3;
-
-const INITIAL_RESULTS = (() => {
-  const m = new Matrix(INITIAL_ROWS, INITIAL_COLS);
-  for (let r = 0; r < INITIAL_ROWS; r++) {
-    for (let c = 0; c < INITIAL_COLS; c++) {
-      const idx = r * 5 + c;
-      const valStr = DEFAULT_INPUTS[idx] ?? "0";
-      const f = Fraction.parse(valStr);
-      m.set(r, c, f ?? Fraction.zero);
-    }
-  }
-
-  const { rrefMatrix: rref, pivots: p, steps: s } = m.rrefWithSteps();
-  const cs = m.columnSpaceBasis(p);
-  const ns = m.nullSpaceBasis(rref, p);
-
-  const mT = m.transposed();
-  const { rrefMatrix: rrefT, pivots: pT, steps: sT } = mT.rrefWithSteps();
-  const swiftRowSpace = mT.columnSpaceBasis(pT);
-  const rowSpaceFallback = m.rowSpaceBasisFromRref(rref);
-  const rs = swiftRowSpace.length > 0 ? swiftRowSpace : rowSpaceFallback;
-  const lns = mT.nullSpaceBasis(rrefT, pT);
-
-  return {
-    steps: s,
-    pivots: p,
-    rrefMatrix: rref,
-    transposeSteps: sT,
-    transposePivots: pT,
-    transposeMatrix: mT,
-    transposeRrefMatrix: rrefT,
-    colSpace: cs,
-    rowSpace: rs,
-    nullSpace: ns,
-    leftNullSpace: lns,
-    colSpaceExpl: colSpaceExplanation(p),
-    rowSpaceExpl: rowSpaceExplanation(pT),
-    nullSpaceExpl: nullSpaceExplanation(INITIAL_COLS, p),
-    leftNullSpaceExpl: leftNullSpaceExplanation(INITIAL_ROWS, pT),
-  };
-})();
+const DEFAULT_INPUTS = Array(25).fill("");
+const INITIAL_ROWS = 1;
+const INITIAL_COLS = 1;
 
 export default function Home() {
   const router = useRouter();
   const [rows, setRows] = useState(INITIAL_ROWS);
   const [cols, setCols] = useState(INITIAL_COLS);
   const [inputs, setInputs] = useState<string[]>(DEFAULT_INPUTS);
+  const [hasCalculated, setHasCalculated] = useState(false);
   
   // Results
-  const [steps, setSteps] = useState<CalculationStep[]>(INITIAL_RESULTS.steps);
-  const [pivots, setPivots] = useState<number[]>(INITIAL_RESULTS.pivots);
-  const [rrefMatrix, setRrefMatrix] = useState<Matrix | null>(INITIAL_RESULTS.rrefMatrix);
+  const [steps, setSteps] = useState<CalculationStep[]>([]);
+  const [pivots, setPivots] = useState<number[]>([]);
+  const [rrefMatrix, setRrefMatrix] = useState<Matrix | null>(null);
   
-  const [transposeSteps, setTransposeSteps] = useState<CalculationStep[]>(INITIAL_RESULTS.transposeSteps);
-  const [transposePivots, setTransposePivots] = useState<number[]>(INITIAL_RESULTS.transposePivots);
-  const [transposeMatrix, setTransposeMatrix] = useState<Matrix | null>(INITIAL_RESULTS.transposeMatrix);
-  const [transposeRrefMatrix, setTransposeRrefMatrix] = useState<Matrix | null>(INITIAL_RESULTS.transposeRrefMatrix);
+  const [transposeSteps, setTransposeSteps] = useState<CalculationStep[]>([]);
+  const [transposePivots, setTransposePivots] = useState<number[]>([]);
+  const [transposeMatrix, setTransposeMatrix] = useState<Matrix | null>(null);
+  const [transposeRrefMatrix, setTransposeRrefMatrix] = useState<Matrix | null>(null);
 
-  const [colSpace, setColSpace] = useState<string[]>(INITIAL_RESULTS.colSpace);
-  const [rowSpace, setRowSpace] = useState<string[]>(INITIAL_RESULTS.rowSpace);
-  const [nullSpace, setNullSpace] = useState<string[]>(INITIAL_RESULTS.nullSpace);
-  const [leftNullSpace, setLeftNullSpace] = useState<string[]>(INITIAL_RESULTS.leftNullSpace);
-  const [colSpaceExpl, setColSpaceExpl] = useState(INITIAL_RESULTS.colSpaceExpl);
-  const [rowSpaceExpl, setRowSpaceExpl] = useState(INITIAL_RESULTS.rowSpaceExpl);
-  const [nullSpaceExpl, setNullSpaceExpl] = useState(INITIAL_RESULTS.nullSpaceExpl);
-  const [leftNullSpaceExpl, setLeftNullSpaceExpl] = useState(INITIAL_RESULTS.leftNullSpaceExpl);
+  const [colSpace, setColSpace] = useState<string[]>([]);
+  const [rowSpace, setRowSpace] = useState<string[]>([]);
+  const [nullSpace, setNullSpace] = useState<string[]>([]);
+  const [leftNullSpace, setLeftNullSpace] = useState<string[]>([]);
+  const [colSpaceExpl, setColSpaceExpl] = useState("");
+  const [rowSpaceExpl, setRowSpaceExpl] = useState("");
+  const [nullSpaceExpl, setNullSpaceExpl] = useState("");
+  const [leftNullSpaceExpl, setLeftNullSpaceExpl] = useState("");
 
   const [geoSelection, setGeoSelection] = useState<GeometricSpaceChoice>('C(A)');
   
@@ -145,18 +101,37 @@ export default function Home() {
     const dense: string[] = [];
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
-        dense.push(inputs[r * 5 + c] ?? "0");
+        dense.push(inputs[r * 5 + c] ?? "");
       }
     }
     return dense;
   }, [inputs, rows, cols]);
+
+  const clearResults = () => {
+    setHasCalculated(false);
+    setSteps([]);
+    setPivots([]);
+    setRrefMatrix(null);
+    setTransposeSteps([]);
+    setTransposePivots([]);
+    setTransposeMatrix(null);
+    setTransposeRrefMatrix(null);
+    setColSpace([]);
+    setRowSpace([]);
+    setNullSpace([]);
+    setLeftNullSpace([]);
+    setColSpaceExpl("");
+    setRowSpaceExpl("");
+    setNullSpaceExpl("");
+    setLeftNullSpaceExpl("");
+  };
 
   const handleCalculate = () => {
     const m = new Matrix(rows, cols);
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         const idx = r * 5 + c;
-        const valStr = inputs[idx] ?? "0";
+        const valStr = inputs[idx] ?? "";
         const f = Fraction.parse(valStr);
         m.set(r, c, f ?? Fraction.zero);
       }
@@ -202,25 +177,14 @@ export default function Home() {
     
     // Explanation
     setColSpaceExpl(colSpaceExplanation(p));
+    setHasCalculated(true);
   };
 
   const handleReset = () => {
-    setInputs(Array(25).fill("0"));
-    setSteps([]);
-    setPivots([]);
-    setRrefMatrix(null);
-    setTransposeSteps([]);
-    setTransposePivots([]);
-    setTransposeMatrix(null);
-    setTransposeRrefMatrix(null);
-    setColSpace([]);
-    setRowSpace([]);
-    setNullSpace([]);
-    setLeftNullSpace([]);
-    setColSpaceExpl("");
-    setRowSpaceExpl("");
-    setNullSpaceExpl("");
-    setLeftNullSpaceExpl("");
+    setRows(INITIAL_ROWS);
+    setCols(INITIAL_COLS);
+    setInputs(Array(25).fill(""));
+    clearResults();
   };
 
   const handleInputChange = (index: number, val: string) => {
@@ -258,7 +222,10 @@ export default function Home() {
                             {[1,2,3,4,5].map(r => (
                                 <button 
                                     key={r}
-                                    onClick={() => setRows(r)}
+                                    onClick={() => {
+                                      setRows(r);
+                                      clearResults();
+                                    }}
                                     className={`w-8 h-7 text-xs font-semibold rounded-md transition-all ${rows === r ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
                                 >
                                     {r}
@@ -273,7 +240,10 @@ export default function Home() {
                             {[1,2,3,4,5].map(c => (
                                 <button 
                                     key={c}
-                                    onClick={() => setCols(c)}
+                                    onClick={() => {
+                                      setCols(c);
+                                      clearResults();
+                                    }}
                                     className={`w-8 h-7 text-xs font-semibold rounded-md transition-all ${cols === c ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
                                 >
                                     {c}
@@ -317,7 +287,7 @@ export default function Home() {
         </div>
 
         {/* Steps */}
-        {(steps.length > 0 || transposeSteps.length > 0) && (
+        {hasCalculated && (steps.length > 0 || transposeSteps.length > 0) && (
             <div className="space-y-6">
                 <RrefSection title="RREF Process (A)" steps={steps} pivots={pivots} isTranspose={false} />
                 <RrefSection title="RREF Process (Aᵗ)" steps={transposeSteps} pivots={transposePivots} isTranspose={true} />
@@ -325,6 +295,7 @@ export default function Home() {
         )}
 
         {/* Spaces */}
+        {hasCalculated && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-6">
                 <SpaceSection 
@@ -379,17 +350,20 @@ export default function Home() {
                 </SpaceSection>
             </div>
         </div>
+        )}
 
-        <GeometricSection 
-            selection={geoSelection}
-            setSelection={setGeoSelection}
-            rows={rows}
-            cols={cols}
-            colSpace={colSpace}
-            rowSpace={rowSpace}
-            nullSpace={nullSpace}
-            leftNullSpace={leftNullSpace}
-        />
+        {hasCalculated && (
+          <GeometricSection 
+              selection={geoSelection}
+              setSelection={setGeoSelection}
+              rows={rows}
+              cols={cols}
+              colSpace={colSpace}
+              rowSpace={rowSpace}
+              nullSpace={nullSpace}
+              leftNullSpace={leftNullSpace}
+          />
+        )}
 
       </div>
     </main>

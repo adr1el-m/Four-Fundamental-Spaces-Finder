@@ -2,9 +2,9 @@ import AppKit
 import SwiftUI
 
 struct ContentView: View {
-    @State private var rows = 2
-    @State private var cols = 3
-    @State private var inputs: [String] = Array(repeating: "0", count: 25)
+    @State private var rows = 1
+    @State private var cols = 1
+    @State private var inputs: [String] = Array(repeating: "", count: 25)
     @State private var showAbout = false
     
     // Results
@@ -29,6 +29,7 @@ struct ContentView: View {
     // UI State
     @State private var selectedSpace: SpaceType = .column
     @AppStorage("appTheme") private var currentTheme: AppTheme = .system
+    @State private var hasCalculated = false
     
     enum AppTheme: String, CaseIterable, Identifiable {
         case system = "System"
@@ -97,7 +98,7 @@ struct ContentView: View {
                             }
                             
                             HStack {
-                                Text("Cols")
+                                Text("Columns")
                                 Spacer()
                                 Picker("", selection: $cols) {
                                     ForEach(1...5, id: \.self) { Text("\($0)") }
@@ -125,7 +126,7 @@ struct ContentView: View {
                                 .font(.headline)
                             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: cols), spacing: 10) {
                                 ForEach(0..<(rows * cols), id: \.self) { idx in
-                                    TextField("0", text: $inputs[idx])
+                                    TextField("", text: $inputs[idx])
                                         .textFieldStyle(.roundedBorder)
                                         .multilineTextAlignment(.center)
                                         .frame(height: 40)
@@ -137,89 +138,91 @@ struct ContentView: View {
                     }
                 }
                 
-                if !steps.isEmpty {
-                    VStack(spacing: 20) {
-                        StepsView(steps: steps, title: "RREF Process (A)", pivots: pivots, isTranspose: false)
-                        if !transposeSteps.isEmpty {
-                            StepsView(steps: transposeSteps, title: "RREF Process (Aᵗ)", pivots: transposePivots, isTranspose: true)
-                        }
-                    }
-                    
-                    // Results
-                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
-                        SpaceSection(
-                            title: "Column Space C(A)",
-                            color: .green,
-                            explanation: colSpaceExpl,
-                            latexBuilder: buildColumnSpaceLatex
-                        ) {
-                            if colSpace.isEmpty {
-                                Text("Waiting...")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            } else {
-                                SpanVectorsView(vectors: colSpace, color: .green)
+                if hasCalculated {
+                    if !steps.isEmpty {
+                        VStack(spacing: 20) {
+                            StepsView(steps: steps, title: "RREF Process (A)", pivots: pivots, isTranspose: false)
+                            if !transposeSteps.isEmpty {
+                                StepsView(steps: transposeSteps, title: "RREF Process (Aᵗ)", pivots: transposePivots, isTranspose: true)
                             }
                         }
                         
-                        SpaceSection(
-                            title: "Row Space R(A)",
-                            color: .orange,
-                            explanation: rowSpaceExpl,
-                            latexBuilder: buildRowSpaceLatex
-                        ) {
-                            if let tm = transposeMatrix, let tr = transposeRrefMatrix {
-                                RowSpaceDerivationView(transposeMatrix: tm, transposeRrefMatrix: tr, basisVectors: rowSpace)
-                            } else {
-                                Text("Waiting...")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                        // Results
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
+                            SpaceSection(
+                                title: "Column Space C(A)",
+                                color: .green,
+                                explanation: colSpaceExpl,
+                                latexBuilder: buildColumnSpaceLatex
+                            ) {
+                                if colSpace.isEmpty {
+                                    Text("Waiting...")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                } else {
+                                    SpanVectorsView(vectors: colSpace, color: .green)
+                                }
+                            }
+                            
+                            SpaceSection(
+                                title: "Row Space R(A)",
+                                color: .orange,
+                                explanation: rowSpaceExpl,
+                                latexBuilder: buildRowSpaceLatex
+                            ) {
+                                if let tm = transposeMatrix, let tr = transposeRrefMatrix {
+                                    RowSpaceDerivationView(transposeMatrix: tm, transposeRrefMatrix: tr, basisVectors: rowSpace)
+                                } else {
+                                    Text("Waiting...")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            
+                            SpaceSection(
+                                title: "Null Space N(A)",
+                                color: .blue,
+                                explanation: nullSpaceExpl,
+                                latexBuilder: buildNullSpaceLatex
+                            ) {
+                                if let rref = rrefMatrix {
+                                    NullSpaceDerivationView(rrefMatrix: rref, pivots: pivots, basisVectors: nullSpace, accentColor: .blue, spaceLabel: "N(A)")
+                                } else {
+                                    Text("Waiting...")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            
+                            SpaceSection(
+                                title: "Left Null Space N(Aᵗ)",
+                                color: .pink,
+                                explanation: leftNullSpaceExpl,
+                                latexBuilder: buildLeftNullSpaceLatex
+                            ) {
+                                if let tr = transposeRrefMatrix {
+                                    NullSpaceDerivationView(rrefMatrix: tr, pivots: transposePivots, basisVectors: leftNullSpace, accentColor: .pink, spaceLabel: "N(Aᵗ)")
+                                } else {
+                                    Text("Waiting...")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
                             }
                         }
                         
-                        SpaceSection(
-                            title: "Null Space N(A)",
-                            color: .blue,
-                            explanation: nullSpaceExpl,
-                            latexBuilder: buildNullSpaceLatex
-                        ) {
-                            if let rref = rrefMatrix {
-                                NullSpaceDerivationView(rrefMatrix: rref, pivots: pivots, basisVectors: nullSpace, accentColor: .blue, spaceLabel: "N(A)")
-                            } else {
-                                Text("Waiting...")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                        // Geometric Visualization
+                        VStack(spacing: 12) {
+                            Picker("Space", selection: $selectedSpace) {
+                                ForEach(SpaceType.allCases) { type in
+                                    Text(type.rawValue).tag(type)
+                                }
                             }
+                            .pickerStyle(.segmented)
+                            .frame(width: 400)
+                            
+                            let vecs = vectorsForSelection(selectedSpace)
+                            GeometryView(basisVectors: vecs, accentColor: selectedSpace.color)
                         }
-                        
-                        SpaceSection(
-                            title: "Left Null Space N(Aᵗ)",
-                            color: .pink,
-                            explanation: leftNullSpaceExpl,
-                            latexBuilder: buildLeftNullSpaceLatex
-                        ) {
-                            if let tr = transposeRrefMatrix {
-                                NullSpaceDerivationView(rrefMatrix: tr, pivots: transposePivots, basisVectors: leftNullSpace, accentColor: .pink, spaceLabel: "N(Aᵗ)")
-                            } else {
-                                Text("Waiting...")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                    }
-                    
-                    // Geometric Visualization
-                    VStack(spacing: 12) {
-                        Picker("Space", selection: $selectedSpace) {
-                            ForEach(SpaceType.allCases) { type in
-                                Text(type.rawValue).tag(type)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                        .frame(width: 400)
-                        
-                        let vecs = vectorsForSelection(selectedSpace)
-                        GeometryView(basisVectors: vecs, accentColor: selectedSpace.color)
                     }
                 }
                 
@@ -230,9 +233,6 @@ struct ContentView: View {
         .background(
             LinearGradient(colors: [Color.gray.opacity(0.1), Color.gray.opacity(0.2)], startPoint: .topLeading, endPoint: .bottomTrailing)
         )
-        .onAppear {
-            calculate()
-        }
         .sheet(isPresented: $showAbout) {
             AboutView()
                 .frame(minWidth: 720, minHeight: 560)
@@ -284,10 +284,12 @@ struct ContentView: View {
         rowSpaceExpl = rowSpaceExplanation(transposePivots: resT.pivots)
         nullSpaceExpl = nullSpaceExplanation(numCols: cols, pivots: res.pivots)
         leftNullSpaceExpl = leftNullSpaceExplanation(numRows: rows, transposePivots: resT.pivots)
+        hasCalculated = true
     }
     
     func reset() {
-        inputs = Array(repeating: "0", count: 25)
+        hasCalculated = false
+        inputs = Array(repeating: "", count: 25)
         colSpace = []
         rowSpace = []
         nullSpace = []
@@ -605,21 +607,39 @@ struct MatrixStaticView: View {
     }
     
     var body: some View {
-        VStack(spacing: 4) {
+        let cellFont = NSFont.monospacedSystemFont(ofSize: 13, weight: .medium)
+        let headerFont = NSFont.monospacedSystemFont(ofSize: 10, weight: .bold)
+        let colWidths: [CGFloat] = (0..<matrix.cols).map { c in
+            var w: CGFloat = 24
+            if let headers, c < headers.count {
+                let hw = (headers[c] as NSString).size(withAttributes: [.font: headerFont]).width + 10
+                w = max(w, ceil(hw))
+            }
+            for r in 0..<matrix.rows {
+                let s = matrix.get(r, c).description
+                let measured = (s as NSString).size(withAttributes: [.font: cellFont]).width + 14
+                w = max(w, ceil(measured))
+            }
+            return w
+        }
+
+        return VStack(spacing: 4) {
             if let headers {
                 HStack(spacing: 12) {
-                    ForEach(Array(headers.enumerated()), id: \.offset) { _, h in
+                    ForEach(Array(headers.enumerated()), id: \.offset) { i, h in
                         Text(h)
                             .font(.system(size: 10, weight: .bold, design: .monospaced))
                             .foregroundStyle(.secondary)
-                            .frame(minWidth: 24)
+                            .lineLimit(1)
+                            .frame(width: colWidths[safe: i] ?? 24, alignment: .center)
                     }
                 }
+                .padding(.horizontal, 18)
             }
-            
+
             HStack(spacing: 0) {
                 BracketSide(isLeft: true, height: bracketHeight)
-                
+
                 VStack(spacing: 6) {
                     ForEach(0..<matrix.rows, id: \.self) { r in
                         HStack(spacing: 12) {
@@ -629,7 +649,8 @@ struct MatrixStaticView: View {
                                 Text(val.description)
                                     .font(.system(size: 13, weight: .medium, design: .monospaced))
                                     .foregroundStyle(isHighlighted ? Color.blue : Color.primary)
-                                    .frame(minWidth: 24, minHeight: 24)
+                                    .lineLimit(1)
+                                    .frame(width: colWidths[c], height: 24)
                                     .padding(.horizontal, 4)
                                     .background(isHighlighted ? Color.blue.opacity(0.12) : Color.clear)
                                     .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
@@ -639,10 +660,12 @@ struct MatrixStaticView: View {
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 8)
-                
+
                 BracketSide(isLeft: false, height: bracketHeight)
             }
+            .padding(.horizontal, 2)
         }
+        .fixedSize(horizontal: true, vertical: false)
     }
 }
 
@@ -753,29 +776,32 @@ struct RowSpaceDerivationView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top, spacing: 14) {
-                HStack(spacing: 8) {
-                    Text("A")
-                        .font(.system(size: 14, weight: .bold))
-                    Text("T")
-                        .font(.system(size: 11, weight: .bold))
-                        .baselineOffset(7)
-                        .padding(.leading, -4)
-                    Text("=")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(.secondary)
-                    MatrixStaticView(matrix: transposeMatrix, headers: nil, highlightCols: nil)
-                }
-                
-                VStack(alignment: .center, spacing: 8) {
-                    Text("RREF")
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundStyle(.secondary)
-                        .textCase(.uppercase)
-                        .tracking(0.8)
-                    MatrixStaticView(matrix: transposeRrefMatrix, headers: nil, highlightCols: nil)
+            ScrollView(.horizontal) {
+                HStack(alignment: .top, spacing: 18) {
+                    HStack(spacing: 8) {
+                        Text("A")
+                            .font(.system(size: 14, weight: .bold))
+                        Text("T")
+                            .font(.system(size: 11, weight: .bold))
+                            .baselineOffset(7)
+                            .padding(.leading, -4)
+                        Text("=")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(.secondary)
+                        MatrixStaticView(matrix: transposeMatrix, headers: nil, highlightCols: nil)
+                    }
+
+                    VStack(alignment: .center, spacing: 8) {
+                        Text("RREF")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(.secondary)
+                            .textCase(.uppercase)
+                            .tracking(0.8)
+                        MatrixStaticView(matrix: transposeRrefMatrix, headers: nil, highlightCols: nil)
+                    }
                 }
             }
+            .scrollIndicators(.hidden)
             
             HStack(alignment: .center, spacing: 10) {
                 HStack(spacing: 0) {
@@ -813,20 +839,23 @@ struct NullSpaceDerivationView: View {
         let exprVector = buildExpressionVector(freeCols: freeCols)
         
         VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .center, spacing: 12) {
-                HStack(spacing: 8) {
-                    Text("RREF =")
-                        .font(.system(size: 14, weight: .bold))
+            ScrollView(.horizontal) {
+                HStack(alignment: .center, spacing: 18) {
+                    HStack(spacing: 8) {
+                        Text("RREF =")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(.secondary)
+                        MatrixStaticView(matrix: rrefMatrix, headers: headers, highlightCols: pivotSet)
+                    }
+                    
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(.secondary)
-                    MatrixStaticView(matrix: rrefMatrix, headers: headers, highlightCols: pivotSet)
+                    
+                    ParametricVectorView(expressions: exprVector)
                 }
-                
-                Image(systemName: "arrow.right")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.secondary)
-                
-                ParametricVectorView(expressions: exprVector)
             }
+            .scrollIndicators(.hidden)
             
             if !freeCols.isEmpty {
                 HStack(alignment: .center, spacing: 10) {

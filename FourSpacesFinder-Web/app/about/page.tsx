@@ -14,8 +14,8 @@ type Person = {
 
 const PEOPLE: Person[] = [
   { name: 'Magalona, Adriel', imageSrc: '/asset/img/Adriel.png' },
-  { name: 'Puti, Vince', imageSrc: '/asset/img/Vince.jpg' },
-  { name: 'Mac, Lozano', imageSrc: '/asset/img/Mac.jpg' },
+  { name: 'Puti, Jude Vincent', imageSrc: '/asset/img/Vince.jpg' },
+  { name: 'Lozano, Mac Edison', imageSrc: '/asset/img/Mac.jpg' },
   { name: 'Monterey, Reine Arabelle', imageSrc: '/asset/img/Reine.jpg' },
   { name: 'Dotollo, Zyrah Mae', imageSrc: '/asset/img/Zyrah.JPG' },
   { name: 'Castillejo, Paul Daniel', imageSrc: '/asset/img/Paul.jpg' },
