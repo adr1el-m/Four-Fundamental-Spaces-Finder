@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Fraction, Matrix, CalculationStep } from '@/lib/math';
 import { GlassPanel } from '@/components/ui/GlassPanel';
@@ -68,6 +68,7 @@ function leftNullSpaceExplanation(numRows: number, transposePivots: number[]) {
 const DEFAULT_INPUTS = Array(25).fill("");
 const INITIAL_ROWS = 1;
 const INITIAL_COLS = 1;
+const STORAGE_KEY = 'four-spaces-finder:web-state:v1';
 
 export default function Home() {
   const router = useRouter();
@@ -75,6 +76,9 @@ export default function Home() {
   const [cols, setCols] = useState(INITIAL_COLS);
   const [inputs, setInputs] = useState<string[]>(DEFAULT_INPUTS);
   const [hasCalculated, setHasCalculated] = useState(false);
+  const [hasHydrated, setHasHydrated] = useState(false);
+  const shouldRecalculateRef = useRef(false);
+  const didRecalculateRef = useRef(false);
   
   // Results
   const [steps, setSteps] = useState<CalculationStep[]>([]);
@@ -126,7 +130,55 @@ export default function Home() {
     setLeftNullSpaceExpl("");
   };
 
-  const handleCalculate = () => {
+  useEffect(() => {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      setHasHydrated(true);
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as {
+        rows?: number;
+        cols?: number;
+        inputs?: string[];
+        hasCalculated?: boolean;
+        geoSelection?: GeometricSpaceChoice;
+      };
+
+      const nextRows = typeof parsed.rows === 'number' ? parsed.rows : INITIAL_ROWS;
+      const nextCols = typeof parsed.cols === 'number' ? parsed.cols : INITIAL_COLS;
+      const nextInputs = Array.isArray(parsed.inputs)
+        ? Array.from({ length: 25 }, (_, i) => (typeof parsed.inputs?.[i] === 'string' ? parsed.inputs[i] : ''))
+        : Array(25).fill('');
+
+      setRows(nextRows);
+      setCols(nextCols);
+      setInputs(nextInputs);
+      if (parsed.geoSelection) setGeoSelection(parsed.geoSelection);
+
+      shouldRecalculateRef.current = Boolean(parsed.hasCalculated);
+    } catch {
+      sessionStorage.removeItem(STORAGE_KEY);
+    } finally {
+      setHasHydrated(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!hasHydrated) return;
+
+    const payload = JSON.stringify({
+      rows,
+      cols,
+      inputs,
+      hasCalculated,
+      geoSelection,
+    });
+    sessionStorage.setItem(STORAGE_KEY, payload);
+  }, [cols, geoSelection, hasCalculated, hasHydrated, inputs, rows]);
+
+  const calculateFromCurrentState = useCallback(() => {
     const m = new Matrix(rows, cols);
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
@@ -178,7 +230,20 @@ export default function Home() {
     // Explanation
     setColSpaceExpl(colSpaceExplanation(p));
     setHasCalculated(true);
+  }, [cols, inputs, rows]);
+
+  const handleCalculate = () => {
+    calculateFromCurrentState();
   };
+
+  useEffect(() => {
+    if (!hasHydrated) return;
+    if (!shouldRecalculateRef.current) return;
+    if (didRecalculateRef.current) return;
+
+    didRecalculateRef.current = true;
+    calculateFromCurrentState();
+  }, [calculateFromCurrentState, hasHydrated]);
 
   const handleReset = () => {
     setRows(INITIAL_ROWS);
