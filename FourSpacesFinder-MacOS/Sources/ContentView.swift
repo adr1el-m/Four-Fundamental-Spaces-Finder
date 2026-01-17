@@ -596,6 +596,14 @@ struct MatrixStaticView: View {
     let headers: [String]?
     let highlightCols: Set<Int>?
     
+    var bracketHeight: CGFloat {
+        let rows = max(1, matrix.rows)
+        let cellHeight: CGFloat = 24
+        let rowSpacing: CGFloat = 6
+        let verticalPadding: CGFloat = 16
+        return CGFloat(rows) * cellHeight + CGFloat(max(0, rows - 1)) * rowSpacing + verticalPadding
+    }
+    
     var body: some View {
         VStack(spacing: 4) {
             if let headers {
@@ -610,7 +618,7 @@ struct MatrixStaticView: View {
             }
             
             HStack(spacing: 0) {
-                BracketSide(isLeft: true)
+                BracketSide(isLeft: true, height: bracketHeight)
                 
                 VStack(spacing: 6) {
                     ForEach(0..<matrix.rows, id: \.self) { r in
@@ -632,7 +640,7 @@ struct MatrixStaticView: View {
                 .padding(.horizontal, 10)
                 .padding(.vertical, 8)
                 
-                BracketSide(isLeft: false)
+                BracketSide(isLeft: false, height: bracketHeight)
             }
         }
     }
@@ -805,7 +813,7 @@ struct NullSpaceDerivationView: View {
         let exprVector = buildExpressionVector(freeCols: freeCols)
         
         VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top, spacing: 12) {
+            HStack(alignment: .center, spacing: 12) {
                 HStack(spacing: 8) {
                     Text("RREF =")
                         .font(.system(size: 14, weight: .bold))
@@ -816,10 +824,8 @@ struct NullSpaceDerivationView: View {
                 Image(systemName: "arrow.right")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(.secondary)
-                    .padding(.top, 18)
                 
                 ParametricVectorView(expressions: exprVector)
-                    .padding(.top, 6)
             }
             
             if !freeCols.isEmpty {

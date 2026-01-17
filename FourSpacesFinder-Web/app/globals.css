@@ -29,3 +29,43 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+html.light {
+  color-scheme: light;
+  scrollbar-color: rgba(0, 0, 0, 0.35) rgba(0, 0, 0, 0.08);
+}
+
+html.dark {
+  color-scheme: dark;
+  scrollbar-color: rgba(255, 255, 255, 0.25) rgba(255, 255, 255, 0.08);
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+html.light::-webkit-scrollbar-track,
+html.light body::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+html.light::-webkit-scrollbar-thumb,
+html.light body::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 999px;
+  border: 3px solid rgba(255, 255, 255, 0.6);
+}
+
+html.dark::-webkit-scrollbar-track,
+html.dark body::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+html.dark::-webkit-scrollbar-thumb,
+html.dark body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  border: 3px solid rgba(0, 0, 0, 0.5);
+}
