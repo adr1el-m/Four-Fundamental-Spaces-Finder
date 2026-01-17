@@ -22,7 +22,7 @@ Experience the tool directly in your browser with a modern, responsive interface
 <img src="FourSpacesFinder-Web/public/asset/img/readme/LandingPage.png" alt="Landing Page" width="900">
 
 ### Geometric Visualization
-<img src="FourSpacesFinder-Web/public/asset/img/readme/GeometricVisualization.png" alt="Geometric Visualization" width="900">
+<img src="./FourSpacesFinder-Web/public/asset/img/readme/GeometricVisualization.png" alt="Geometric Visualization" width="900">
 
 ---
 
