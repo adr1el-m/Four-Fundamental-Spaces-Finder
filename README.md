@@ -38,7 +38,7 @@ A high-performance native Swift application optimized for macOS, offering the sa
 
 ---
 
-## Team
+## BSCS 2-2 Group 5
 
 <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%">
   <tr>
