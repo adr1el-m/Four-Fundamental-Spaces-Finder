@@ -88,3 +88,25 @@ A high-performance native Swift application optimized for macOS, offering the sa
     </td>
   </tr>
 </table>
+
+## Comprehensive Repository Structure
+
+```text
+FourSpacesRepo/
+├── FourSpacesFinder-Web/                 # Next.js web application
+│   ├── app/                              # App Router pages (/, /about)
+│   ├── components/                       # UI + feature components
+│   ├── lib/                              # Custom math + utilities
+│   ├── public/                           # Static assets (images, icons)
+│   ├── package.json                      # Web scripts and dependencies
+│   └── next.config.ts                    # Next.js configuration
+├── FourSpacesFinder-MacOS/               # Native macOS (Swift/SwiftUI) app
+│   ├── Sources/                          # SwiftUI views + math engine
+│   ├── Resources/                        # App icons and bundled assets
+│   ├── build_dmg.sh                      # DMG packaging script
+│   └── run_dev.sh                        # Local dev helper script
+├── README.md                             # Project documentation (this file)
+└── .gitignore                            # Git ignore rules
+```
+
+Made by the Students of Polytechnic University of the Philippines by BSCS 2-2 students under Professor John Patrick B. Sta Maria
