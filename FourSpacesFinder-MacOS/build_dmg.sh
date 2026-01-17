@@ -6,7 +6,8 @@ SRC_DIR="Sources"
 BUILD_DIR="Build"
 DMG_NAME="${APP_NAME}.dmg"
 
-cd /Users/adrielmagalona/Desktop/FourSpacesFinderdmg
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
 
 echo "Cleaning..."
 rm -rf "$BUILD_DIR"
@@ -15,6 +16,19 @@ rm -f "$DMG_NAME"
 echo "Creating directories..."
 mkdir -p "$BUILD_DIR/$APP_NAME.app/Contents/MacOS"
 mkdir -p "$BUILD_DIR/$APP_NAME.app/Contents/Resources"
+
+WEB_IMG_DIR="$SCRIPT_DIR/../FourSpacesFinder-Web/public/asset/img"
+for img in "Adriel.png" "Vince.jpg" "Mac.jpg" "Reine.jpg" "Zyrah.JPG" "Paul.jpg"; do
+  if [ ! -f "$WEB_IMG_DIR/$img" ]; then
+    echo "Missing image: $WEB_IMG_DIR/$img"
+    exit 1
+  fi
+  cp "$WEB_IMG_DIR/$img" "$BUILD_DIR/$APP_NAME.app/Contents/Resources/$img"
+done
+
+if [ -f "Resources/AppIcon.icns" ]; then
+  cp "Resources/AppIcon.icns" "$BUILD_DIR/$APP_NAME.app/Contents/Resources/AppIcon.icns"
+fi
 
 echo "Compiling Swift sources..."
 swiftc "$SRC_DIR"/*.swift -o "$BUILD_DIR/$APP_NAME.app/Contents/MacOS/$APP_NAME" -target arm64-apple-macosx13.0

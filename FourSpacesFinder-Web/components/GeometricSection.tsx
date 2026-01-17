@@ -1,6 +1,5 @@
 import React from 'react';
 import { GlassPanel } from './ui/GlassPanel';
-import { SubspacePlot2D } from './SubspacePlot2D';
 import { SubspacePlot3D } from './SubspacePlot3D';
 import { parseVectorDoubles } from '@/lib/math';
 import { cn } from '@/lib/utils';
@@ -85,14 +84,12 @@ export function GeometricSection({
                 <div className="flex items-center justify-center h-[300px] bg-white/5 rounded-xl border border-white/10">
                     <span className="text-gray-400 text-sm">Waiting...</span>
                 </div>
-            ) : ambient === 2 ? (
-                <SubspacePlot2D 
-                    basisVectors={rawBasis.map(v => parseVectorDoubles(v, 2))} 
-                    accentColor={getAccentColor(selection)}
-                />
-            ) : ambient === 3 ? (
+            ) : (ambient >= 1 && ambient <= 3) ? (
                 <SubspacePlot3D
-                    basisVectors={rawBasis.map(v => parseVectorDoubles(v, 3))}
+                    basisVectors={rawBasis.map(v => {
+                        const vec = parseVectorDoubles(v, 3);
+                        return vec;
+                    })}
                     accentColor={getAccentColor(selection)}
                 />
             ) : (

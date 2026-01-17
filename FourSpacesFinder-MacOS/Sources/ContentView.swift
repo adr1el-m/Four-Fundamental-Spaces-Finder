@@ -1,9 +1,11 @@
+import AppKit
 import SwiftUI
 
 struct ContentView: View {
     @State private var rows = 2
     @State private var cols = 3
     @State private var inputs: [String] = Array(repeating: "0", count: 25)
+    @State private var showAbout = false
     
     // Results
     @State private var rrefMatrix: Matrix?
@@ -26,6 +28,14 @@ struct ContentView: View {
     
     // UI State
     @State private var selectedSpace: SpaceType = .column
+    @AppStorage("appTheme") private var currentTheme: AppTheme = .system
+    
+    enum AppTheme: String, CaseIterable, Identifiable {
+        case system = "System"
+        case light = "Light"
+        case dark = "Dark"
+        var id: String { rawValue }
+    }
     
     enum SpaceType: String, CaseIterable, Identifiable {
         case column = "C(A)"
@@ -44,14 +54,6 @@ struct ContentView: View {
         }
     }
     
-    init() {
-        // Set defaults
-        var def = Array(repeating: "0", count: 25)
-        def[0] = "2"; def[1] = "4"; def[2] = "-2"
-        def[5] = "1"; def[6] = "2"; def[7] = "-1"
-        _inputs = State(initialValue: def)
-    }
-    
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
@@ -65,6 +67,19 @@ struct ContentView: View {
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
+                    
+                    Picker("", selection: $currentTheme) {
+                        ForEach(AppTheme.allCases) { theme in
+                            Text(theme.rawValue).tag(theme)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .frame(width: 100)
+                    .padding(.trailing, 8)
+                    
+                    GlassButton(title: "About", icon: "info.circle") {
+                        showAbout = true
+                    }
                 }
                 
                 // Controls
@@ -218,6 +233,11 @@ struct ContentView: View {
         .onAppear {
             calculate()
         }
+        .sheet(isPresented: $showAbout) {
+            AboutView()
+                .frame(minWidth: 720, minHeight: 560)
+        }
+        .preferredColorScheme(currentTheme == .light ? .light : (currentTheme == .dark ? .dark : nil))
     }
     
     func vectorsForSelection(_ type: SpaceType) -> [String] {
@@ -534,10 +554,19 @@ struct VectorView: View {
             .filter { $0.hasPrefix("[") }
             .map { $0.replacingOccurrences(of: "[", with: "").replacingOccurrences(of: "]", with: "") }
     }
+
+    var bracketHeight: CGFloat {
+        let rowCount = max(1, values.count)
+        let font = NSFont.monospacedSystemFont(ofSize: 15, weight: .medium)
+        let lineHeight = font.ascender - font.descender + font.leading
+        let rowSpacing: CGFloat = 6
+        let verticalPadding: CGFloat = 16
+        return CGFloat(rowCount) * lineHeight + CGFloat(max(0, rowCount - 1)) * rowSpacing + verticalPadding
+    }
     
     var body: some View {
         HStack(spacing: 0) {
-            BracketSide(isLeft: true)
+            BracketSide(isLeft: true, height: bracketHeight)
             VStack(spacing: 6) {
                 ForEach(values, id: \.self) { val in
                     Text(val)
@@ -550,7 +579,7 @@ struct VectorView: View {
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
-            BracketSide(isLeft: false)
+            BracketSide(isLeft: false, height: bracketHeight)
         }
     }
 }
@@ -611,11 +640,12 @@ struct MatrixStaticView: View {
 
 private struct BracketSide: View {
     let isLeft: Bool
+    var height: CGFloat? = nil
     
     var body: some View {
         SquareBracketSide(isLeft: isLeft)
             .stroke(Color.primary.opacity(0.75), style: StrokeStyle(lineWidth: 2, lineCap: .square, lineJoin: .miter))
-            .frame(width: 8)
+            .frame(width: 8, height: height)
     }
 }
 
@@ -678,7 +708,8 @@ private struct SpanVectorsView: View {
             }
             .max() ?? 1
 
-        let rowHeight: CGFloat = 18
+        let font = NSFont.monospacedSystemFont(ofSize: 15, weight: .medium)
+        let rowHeight = font.ascender - font.descender + font.leading
         let rowSpacing: CGFloat = 6
         let verticalPadding: CGFloat = 16
 
@@ -885,10 +916,19 @@ struct NullSpaceDerivationView: View {
 
 struct ParametricVectorView: View {
     let expressions: [String]
+
+    var bracketHeight: CGFloat {
+        let rowCount = max(1, expressions.count)
+        let font = NSFont.monospacedSystemFont(ofSize: 13, weight: .medium)
+        let lineHeight = font.ascender - font.descender + font.leading
+        let rowSpacing: CGFloat = 6
+        let verticalPadding: CGFloat = 16
+        return CGFloat(rowCount) * lineHeight + CGFloat(max(0, rowCount - 1)) * rowSpacing + verticalPadding
+    }
     
     var body: some View {
         HStack(spacing: 0) {
-            BracketSide(isLeft: true)
+            BracketSide(isLeft: true, height: bracketHeight)
             VStack(spacing: 6) {
                 ForEach(Array(expressions.enumerated()), id: \.offset) { _, ex in
                     Text(ex)
@@ -899,7 +939,7 @@ struct ParametricVectorView: View {
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
-            BracketSide(isLeft: false)
+            BracketSide(isLeft: false, height: bracketHeight)
         }
     }
 }

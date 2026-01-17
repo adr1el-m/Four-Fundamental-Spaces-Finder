@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 struct GeometryView: View {
     let basisVectors: [String]
@@ -207,6 +208,52 @@ struct GeometryView: View {
                             }
                         }
 
+                        // Draw spanned plane if exactly 2 vectors
+                        if nonZero.count == 2 {
+                            let v1 = nonZero[0]
+                            let v2 = nonZero[1]
+                            let cross = v1.cross(v2)
+                            if cross.length > 1e-6 {
+                                // Calculate orthonormal basis for the plane
+                                let b1 = v1.normalized
+                                let b2 = cross.cross(b1).normalized
+                                
+                                let u = Double(units)
+                                // Draw the filled plane
+                                let p1 = b1 * (-u) + b2 * (-u)
+                                let p2 = b1 * (u) + b2 * (-u)
+                                let p3 = b1 * (u) + b2 * (u)
+                                let p4 = b1 * (-u) + b2 * (u)
+                                
+                                var planePath = Path()
+                                planePath.move(to: project(p1))
+                                planePath.addLine(to: project(p2))
+                                planePath.addLine(to: project(p3))
+                                planePath.addLine(to: project(p4))
+                                planePath.closeSubpath()
+                                
+                                context.fill(planePath, with: .color(Color.blue.opacity(0.15)))
+                                context.stroke(planePath, with: .color(Color.blue.opacity(0.3)), lineWidth: 1)
+                                
+                                // Draw grid on the plane
+                                let planeGridStep = units <= 6 ? 1 : 2
+                                let gridAlpha = 0.1
+                                
+                                for i in stride(from: -units, through: units, by: planeGridStep) {
+                                    let t = Double(i)
+                                    // Lines parallel to b1
+                                    let start1 = b1 * (-u) + b2 * t
+                                    let end1 = b1 * (u) + b2 * t
+                                    addLine(start1, end1, color: .white, width: 1, alpha: gridAlpha)
+                                    
+                                    // Lines parallel to b2
+                                    let start2 = b1 * t + b2 * (-u)
+                                    let end2 = b1 * t + b2 * (u)
+                                    addLine(start2, end2, color: .white, width: 1, alpha: gridAlpha)
+                                }
+                            }
+                        }
+
                         addArrow(Vec3(x: -axesLen, y: 0, z: 0), Vec3(x: axesLen, y: 0, z: 0), color: xAxisColor, width: 2.2, headSize: 10, alpha: 0.92)
                         addArrow(Vec3(x: 0, y: -axesLen, z: 0), Vec3(x: 0, y: axesLen, z: 0), color: yAxisColor, width: 2.2, headSize: 10, alpha: 0.90)
                         addArrow(Vec3(x: 0, y: 0, z: -axesLen), Vec3(x: 0, y: 0, z: axesLen), color: zAxisColor, width: 2.2, headSize: 10, alpha: 0.90)
@@ -295,6 +342,8 @@ struct GeometryView: View {
                     }
                     .background(Color.black.opacity(0.8))
                     .cornerRadius(12)
+                    
+                    ScrollDetector(zoom: $zoom)
                 }
                 .frame(height: 520)
                 .overlay(alignment: .topTrailing) {
@@ -353,6 +402,75 @@ struct GeometryView: View {
                             zoomStart = nil
                         }
                 )
+            }
+        }
+    }
+}
+
+private struct ScrollDetector: NSViewRepresentable {
+    @Binding var zoom: Double
+    
+    func makeNSView(context: Context) -> ScrollOverlayView {
+        let view = ScrollOverlayView()
+        // Initial setup
+        view.onScroll = { delta in
+            let scaleFactor = 1.0 + (delta * 0.05)
+            let newZoom = self.zoom * scaleFactor
+            self.zoom = min(4.0, max(0.25, newZoom))
+        }
+        return view
+    }
+    
+    func updateNSView(_ nsView: ScrollOverlayView, context: Context) {
+        // Update closure to capture latest binding
+        nsView.onScroll = { delta in
+            let scaleFactor = 1.0 + (delta * 0.05)
+            let newZoom = self.zoom * scaleFactor
+            self.zoom = min(4.0, max(0.25, newZoom))
+        }
+    }
+    
+    class ScrollOverlayView: NSView {
+        var onScroll: ((CGFloat) -> Void)?
+        private var monitor: Any?
+        
+        override func hitTest(_ point: NSPoint) -> NSView? {
+            // Return nil to let events pass through to views behind (e.g. DragGesture)
+            return nil
+        }
+        
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            // Clean up existing monitor if any
+            if let monitor = monitor {
+                NSEvent.removeMonitor(monitor)
+                self.monitor = nil
+            }
+            
+            // Add new monitor if attached to window
+            if window != nil {
+                monitor = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) { [weak self] event in
+                    guard let self = self else { return event }
+                    
+                    // Check if mouse is over this view
+                    // locationInWindow is in window coordinates (bottom-left origin)
+                    let localPoint = self.convert(event.locationInWindow, from: nil)
+                    
+                    // bounds check
+                    if self.bounds.contains(localPoint) {
+                        // Handle scroll
+                        // Note: event.deltaY > 0 usually means scroll up (zoom in)
+                        self.onScroll?(event.deltaY)
+                        return nil // Consume event to prevent parent scrolling
+                    }
+                    return event
+                }
+            }
+        }
+        
+        deinit {
+            if let monitor = monitor {
+                NSEvent.removeMonitor(monitor)
             }
         }
     }

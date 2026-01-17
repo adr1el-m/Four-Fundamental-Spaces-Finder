@@ -15,10 +15,10 @@ type Person = {
 const PEOPLE: Person[] = [
   { name: 'Magalona, Adriel', imageSrc: '/asset/img/Adriel.png' },
   { name: 'Puti, Vince', imageSrc: '/asset/img/Vince.jpg' },
-  { name: 'Mac, Lozano' },
+  { name: 'Mac, Lozano', imageSrc: '/asset/img/Mac.jpg' },
   { name: 'Monterey, Reine Arabelle', imageSrc: '/asset/img/Reine.jpg' },
   { name: 'Dotollo, Zyrah Mae', imageSrc: '/asset/img/Zyrah.JPG' },
-  { name: 'Castillejo, Paul Daniel' },
+  { name: 'Castillejo, Paul Daniel', imageSrc: '/asset/img/Paul.jpg' },
 ];
 
 function initialsFromName(name: string) {
@@ -39,7 +39,7 @@ export default function AboutPage() {
     <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-black p-4 md:p-8 font-sans">
       <div className="w-full max-w-[95%] mx-auto space-y-6">
         <GlassPanel>
-          <div className="flex flex-col md:flex-row md:items-center gap-4">
+          <div className="flex flex-col gap-4">
             <GlassButton onClick={() => router.push('/')} className="w-fit pl-3 pr-4">
               <ArrowLeft className="w-4 h-4" />
               Back
@@ -59,6 +59,9 @@ export default function AboutPage() {
                   We implemented additional features including LaTeX equation copying, 
                   geometric visualization of subspaces in 2D/3D planes, and detailed calculation steps 
                   showing the Row Reduced Echelon Form (RREF) process.
+                </p>
+                <p className="font-medium text-gray-900 dark:text-white pt-1">
+                  Made by the Students of Polytechnic University of the Philippines by BSCS 2-2 students under Professor John Patrick B. Sta Maria
                 </p>
               </div>
             </div>

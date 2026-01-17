@@ -32,6 +32,19 @@ fi
 mkdir -p "$BUILD_DIR/$APP_NAME.app/Contents/MacOS"
 mkdir -p "$BUILD_DIR/$APP_NAME.app/Contents/Resources"
 
+WEB_IMG_DIR="$SCRIPT_DIR/../FourSpacesFinder-Web/public/asset/img"
+for img in "Adriel.png" "Vince.jpg" "Mac.jpg" "Reine.jpg" "Zyrah.JPG" "Paul.jpg"; do
+  if [ ! -f "$WEB_IMG_DIR/$img" ]; then
+    echo "Missing image: $WEB_IMG_DIR/$img"
+    exit 1
+  fi
+  cp "$WEB_IMG_DIR/$img" "$BUILD_DIR/$APP_NAME.app/Contents/Resources/$img"
+done
+
+if [ -f "Resources/AppIcon.icns" ]; then
+  cp "Resources/AppIcon.icns" "$BUILD_DIR/$APP_NAME.app/Contents/Resources/AppIcon.icns"
+fi
+
 ARCH="$(uname -m)"
 if [ "$ARCH" = "arm64" ]; then
   TARGET="arm64-apple-macosx13.0"
@@ -57,6 +70,7 @@ cat > "$BUILD_DIR/$APP_NAME.app/Contents/Info.plist" <<PLIST
   <key>CFBundleVersion</key><string>1</string>
   <key>LSMinimumSystemVersion</key><string>13.0</string>
   <key>NSHighResolutionCapable</key><true/>
+  <key>CFBundleIconFile</key><string>AppIcon</string>
 </dict>
 </plist>
 PLIST

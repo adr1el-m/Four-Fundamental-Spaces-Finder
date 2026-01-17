@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Fraction, Matrix, CalculationStep } from '@/lib/math';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { GlassButton } from '@/components/ui/GlassButton';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { MatrixInput } from '@/components/MatrixInput';
 import { RrefSection } from '@/components/RrefSection';
 import { SpaceSection } from '@/components/SpaceSection';
@@ -239,9 +240,12 @@ export default function Home() {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Four Fundamental Spaces finder</h1>
             <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Fundamental Spaces Visualizer</p>
           </div>
-          <GlassButton variant="secondary" onClick={() => router.push('/about')}>
-            About
-          </GlassButton>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <GlassButton variant="secondary" onClick={() => router.push('/about')}>
+              About
+            </GlassButton>
+          </div>
         </div>
 
         {/* Controls & Input */}
