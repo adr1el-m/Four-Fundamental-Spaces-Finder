@@ -37,3 +37,54 @@ A high-performance native Swift application optimized for macOS, offering the sa
 <img src="FourSpacesFinder-Web/public/asset/img/readme/GeometricVisualization-mac.jpeg" alt="macOS Geometric Visualization" width="900">
 
 ---
+
+## Team
+
+<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td align="center" width="33.33%">
+      <img src="FourSpacesFinder-Web/public/asset/img/Adriel.png" alt="Adriel Magalona" style="border-radius: 50%; width: 120px; height: 120px; object-fit: cover;"><br>
+      <strong>Adriel Magalona</strong><br>
+      <a href="https://www.linkedin.com/in/adr1el/">
+        <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn">
+      </a>
+    </td>
+    <td align="center" width="33.33%">
+      <img src="FourSpacesFinder-Web/public/asset/img/Vince.jpg" alt="Jude Vincent Puti" style="border-radius: 50%; width: 120px; height: 120px; object-fit: cover;"><br>
+      <strong>Jude Vincent Puti</strong><br>
+      <a href="https://www.linkedin.com/in/jude-vincent-puti-31132b2b2/">
+        <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn">
+      </a>
+    </td>
+    <td align="center" width="33.33%">
+      <img src="FourSpacesFinder-Web/public/asset/img/Mac.jpg" alt="Mac Edison Lozano" style="border-radius: 50%; width: 120px; height: 120px; object-fit: cover;"><br>
+      <strong>Mac Edison Lozano</strong><br>
+      <a href="https://www.linkedin.com/in/mac-lozano-061b96312/">
+        <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn">
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="33.33%" style="padding-top: 20px;">
+      <img src="FourSpacesFinder-Web/public/asset/img/Reine.jpg" alt="Reine Arabelle Monterey" style="border-radius: 50%; width: 120px; height: 120px; object-fit: cover;"><br>
+      <strong>Reine Arabelle Monterey</strong><br>
+      <a href="https://www.linkedin.com/in/reine-arabelle-monterey/">
+        <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn">
+      </a>
+    </td>
+    <td align="center" width="33.33%" style="padding-top: 20px;">
+      <img src="FourSpacesFinder-Web/public/asset/img/Zyrah.JPG" alt="Zyrah Mae Dotollo" style="border-radius: 50%; width: 120px; height: 120px; object-fit: cover;"><br>
+      <strong>Zyrah Mae Dotollo</strong><br>
+      <a href="https://www.linkedin.com/in/zyrah-mae-m-dotollo/">
+        <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn">
+      </a>
+    </td>
+    <td align="center" width="33.33%" style="padding-top: 20px;">
+      <img src="FourSpacesFinder-Web/public/asset/img/Paul.jpg" alt="Paul Daniel Castillejo" style="border-radius: 50%; width: 120px; height: 120px; object-fit: cover;"><br>
+      <strong>Paul Daniel Castillejo</strong><br>
+      <a href="https://www.linkedin.com/in/paul-daniel-castillejo/">
+        <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn">
+      </a>
+    </td>
+  </tr>
+</table>
